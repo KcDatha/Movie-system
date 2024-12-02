@@ -175,7 +175,7 @@ if movie_query:
             </div>
         """, unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
-
+    
 
 st.header("🎲 Explore Random Movies")
 random_movies = get_random_movies()
