@@ -37,7 +37,7 @@ def fetch_movie_details(movie_id):
             "genres": "Unknown"
         }
 
-# Function to fetch random movies for the homepage
+# Function to fetch random movies
 def get_random_movies(num_movies=5):
     random_indices = random.sample(range(len(movies)), num_movies)
     random_movies = []
@@ -58,9 +58,8 @@ def get_random_movies(num_movies=5):
 def recommend(movie):
     index = movies[movies['title'] == movie].index[0]
     distances = sorted(list(enumerate(similarity[index])), reverse=True, key=lambda vector: vector[1])
-    
     recommended_movies = []
-    for i in distances[1:6]:  # Top 5 recommendations
+    for i in distances[1:6]:
         movie_id = movies.iloc[i[0]].id
         details = fetch_movie_details(movie_id)
         recommended_movies.append({
@@ -100,7 +99,6 @@ def add_custom_css():
                 color: white;
             }
 
-            /* Header styles */
             .header {
                 text-align: center;
                 padding: 40px 20px;
@@ -110,21 +108,18 @@ def add_custom_css():
                 margin-bottom: 30px;
             }
 
-            /* Movie cards in a row */
             .movie-row {
                 display: flex;
-                overflow-x: auto;
+                flex-wrap: wrap;
                 gap: 20px;
-                padding: 10px 0;
                 margin-bottom: 30px;
             }
 
             .movie-card {
-                flex: 0 0 auto;
+                flex: 0 0 200px;
                 background: #2c2c54;
                 border-radius: 12px;
                 padding: 10px;
-                width: 200px;
                 text-align: center;
                 box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
                 transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -164,39 +159,24 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# Sidebar for actor search
-with st.sidebar:
-    st.header("🎭 Actor Recommendation")
-    actor_name = st.text_input("Enter actor's name")
-    if st.button("Find Movies"):
-        actor_movies = fetch_movies_by_actor(actor_name)
-        if actor_movies:
-            for movie_title, movie_poster in actor_movies:
-                st.image(movie_poster, caption=movie_title, width=200)
-        else:
-            st.write("No movies found for this actor.")
-
 # Search bar for movie recommendations
 st.header("🔍 Search for Movie Recommendations")
-movies_list_with_placeholder = ["Select a movie"] + list(movies_list)
-select_value = st.selectbox("Select a movie", movies_list_with_placeholder)
+movie_query = st.text_input("Enter movie title")
+if movie_query:
+    recommended_movies = recommend(movie_query)
+    st.subheader(f"Movies Similar to {movie_query}")
+    st.markdown('<div class="movie-row">', unsafe_allow_html=True)
+    for movie in recommended_movies:
+        st.markdown(f"""
+            <div class="movie-card">
+                <img src="{movie['poster']}" alt="{movie['title']}">
+                <h4>{movie['title']}</h4>
+                <p>Rating: {movie['rating']}<br>Genres: {movie['genres']}</p>
+            </div>
+        """, unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
-if select_value != "Select a movie":
-    if st.button("Get Recommendations"):
-        recommended_movies = recommend(select_value)
-        st.subheader(f"Movies Similar to {select_value}")
-        st.markdown('<div class="movie-row">', unsafe_allow_html=True)
-        for movie in recommended_movies:
-            st.markdown(f"""
-                <div class="movie-card">
-                    <img src="{movie['poster']}" alt="{movie['title']}">
-                    <h4>{movie['title']}</h4>
-                    <p>Rating: {movie['rating']}<br>Genres: {movie['genres']}</p>
-                </div>
-            """, unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
 
-# Display random movies
 st.header("🎲 Explore Random Movies")
 random_movies = get_random_movies()
 st.markdown('<div class="movie-row">', unsafe_allow_html=True)
